@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MEPCO Bill Calculator</title>
+  <!-- Bootstrap CSS -->
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" 
+    rel="stylesheet" 
+  />
+  <!-- Google Fonts & Material Icons for a modern look -->
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" 
+    rel="stylesheet" 
+  />
+  <link 
+    href="https://fonts.googleapis.com/icon?family=Material+Icons" 
+    rel="stylesheet"
+  />
+  <style>
+    /* CSS Variables for Color Scheme */
+    :root {
+      --primary: #007bff;
+      --primary-hover: #0056b3;
+      --secondary: #6c757d;
+      --background: #eef2f7;
+      --card-bg: #ffffff;
+      --header-bg: #343a40;
+    }
+  
+    /* Global Styles */
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--background);
+      margin: 0;
+      padding: 0;
+    }
+    /* Header Styles */
+    .header {
+      padding: 10px 15px;
+      background-color: var(--header-bg);
+      color: #fff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .header h3 {
+      margin: 0;
+      font-weight: 500;
+    }
+    .header .btn-outline-secondary {
+      border-color: #fff;
+      color: #fff;
+    }
+    .header .btn-outline-secondary:hover {
+      background-color: #495057;
+    }
+    .material-icons.header-icon {
+      font-size: 1.6rem;
+      cursor: pointer;
+    }
+    /* Card & Section Styles */
+    .card {
+      background-color: var(--card-bg);
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 15px;
+    }
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 10px;
+      color: var(--secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    /* Table Header Customization */
+    .table > thead.table-light > tr > th {
+      background-color: var(--primary) !important;
+      color: #fff !important;
+      font-size: 0.9rem;
+      padding: 0.5rem;
+    }
+    .table td, .table th {
+      font-size: 0.85rem;
+      padding: 0.4rem;
+    }
+    /* Charge Item Style */
+    .charge-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      background-color: #fbfbfb;
+    }
+    .charge-item .material-icons {
+      font-size: 18px;
+      cursor: pointer;
+      color: #d9534f;
+    }
+    /* Button Overrides */
+    .btn-primary {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+    /* Nav Tab Overrides (Summary Tab) */
+    .nav-tabs .nav-link.active {
+      background-color: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    /* Responsive Layout */
+    @media (max-width: 768px) {
+      .content {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-2">
+    <!-- Header -->
+    <div class="header d-flex justify-content-between align-items-center">
+      <h3>
+        <span class="material-icons header-icon align-middle">calculate</span>
+        MEPCO Bill Calculator
+      </h3>
+      <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#settingsModal">
+        <span class="material-icons align-middle">settings</span>
+      </button>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row d-flex align-items-stretch content mt-3">
+      <!-- Input Section -->
+      <div class="col-md-6">
+        <div class="card p-3">
+          <div class="section-title">
+            <span class="material-icons align-middle">input</span>
+            Input Readings
+          </div>
+          <!-- Off-Peak Hours -->
+          <div class="mb-2">
+            <h6 class="text-secondary">
+              <span class="material-icons align-middle">timelapse</span>
+              Off-Peak Hours
+            </h6>
+            <table class="table table-bordered table-sm text-center">
+              <thead class="table-light">
+                <tr>
+                  <th>Type</th>
+                  <th>Prev</th>
+                  <th>Curr</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Import</td>
+                  <td>
+                    <input type="number" id="offPeakImportPrev" class="form-control form-control-sm" placeholder="Prev" oninput="calculateUnits()">
+                  </td>
+                  <td>
+                    <input type="number" id="offPeakImportCurr" class="form-control form-control-sm" placeholder="Curr" oninput="calculateUnits()">
+                  </td>
+                </tr>
+                <tr>
+                  <td>Export</td>
+                  <td>
+                    <input type="number" id="offPeakExportPrev" class="form-control form-control-sm" placeholder="Prev" oninput="calculateUnits()">
+                  </td>
+                  <td>
+                    <input type="number" id="offPeakExportCurr" class="form-control form-control-sm" placeholder="Curr" oninput="calculateUnits()">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Peak Hours -->
+          <div>
+            <h6 class="text-secondary">
+              <span class="material-icons align-middle">schedule</span>
+              Peak Hours
+            </h6>
+            <table class="table table-bordered table-sm text-center">
+              <thead class="table-light">
+                <tr>
+                  <th>Type</th>
+                  <th>Prev</th>
+                  <th>Curr</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Import</td>
+                  <td>
+                    <input type="number" id="peakImportPrev" class="form-control form-control-sm" placeholder="Prev" oninput="calculateUnits()">
+                  </td>
+                  <td>
+                    <input type="number" id="peakImportCurr" class="form-control form-control-sm" placeholder="Curr" oninput="calculateUnits()">
+                  </td>
+                </tr>
+                <tr>
+                  <td>Export</td>
+                  <td>
+                    <input type="number" id="peakExportPrev" class="form-control form-control-sm" placeholder="Prev" oninput="calculateUnits()">
+                  </td>
+                  <td>
+                    <input type="number" id="peakExportCurr" class="form-control form-control-sm" placeholder="Curr" oninput="calculateUnits()">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="d-grid mt-2">
+            <button type="button" class="btn btn-primary btn-sm" onclick="calculateBill()">
+              <span class="material-icons align-middle">paid</span>
+              Calculate Bill
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div class="col-md-6">
+        <div class="card p-3">
+          <div class="section-title">
+            <span class="material-icons align-middle">receipt_long</span>
+            Bill Results
+          </div>
+          <h6 class="mb-1">Units Consumption</h6>
+          <table class="table table-bordered table-sm text-center">
+            <thead class="table-light">
+              <tr>
+                <th>Category</th>
+                <th>Units</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Off-Peak</td>
+                <td id="netOffPeakUnits">0.00</td>
+              </tr>
+              <tr>
+                <td>Peak</td>
+                <td id="netPeakUnits">0.00</td>
+              </tr>
+              <tr class="fw-bold">
+                <td>Total</td>
+                <td id="totalUnits">0.00</td>
+              </tr>
+            </tbody>
+          </table>
+          <h6 class="mb-1">Charges Breakdown</h6>
+          <table class="table table-bordered table-sm text-center">
+            <thead class="table-light">
+              <tr>
+                <th>Description</th>
+                <th>Amount (Rs)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Cost Before Taxes</td>
+                <td id="costBeforeTaxes">0.00</td>
+              </tr>
+              <tr>
+                <td>Total Taxes & Charges</td>
+                <td id="totalTaxes">0.00</td>
+              </tr>
+              <tr class="fw-bold">
+                <td>Final Bill</td>
+                <td id="finalBill">0.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- End Main Row -->
+
+    <!-- New Rates Summary Tab (at End of Page) -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card p-3 mt-3">
+          <ul class="nav nav-tabs" id="summaryTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summaryContent" type="button" role="tab" aria-controls="summaryContent" aria-selected="true">
+                Rates Summary
+              </button>
+            </li>
+          </ul>
+          <div class="tab-content" id="summaryTabContent">
+            <div class="tab-pane fade show active" id="summaryContent" role="tabpanel" aria-labelledby="summary-tab">
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <h6>Current Rates & Taxes</h6>
+                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                  <span class="material-icons">settings</span>
+                  Change Settings
+                </button>
+              </div>
+              <table class="table table-bordered table-sm text-center mt-2">
+                <tbody>
+                  <tr>
+                    <td>Off-Peak Rate</td>
+                    <td id="summaryOffPeakRate">41.68</td>
+                  </tr>
+                  <tr>
+                    <td>Peak Rate</td>
+                    <td id="summaryPeakRate">48.00</td>
+                  </tr>
+                  <tr>
+                    <td>FPA Rate</td>
+                    <td id="summaryFpaRate">2.50</td>
+                  </tr>
+                  <tr>
+                    <td>GST Rate</td>
+                    <td id="summaryGstRate">0.17</td>
+                  </tr>
+                  <tr>
+                    <td>TV Fee</td>
+                    <td id="summaryTvFee">35.00</td>
+                  </tr>
+                  <tr>
+                    <td>Total Extra Charges</td>
+                    <td id="summaryExtraCharges">0.00</td>
+                  </tr>
+                  <tr>
+                    <td>Extra Charges Details</td>
+                    <td id="summaryExtraChargesDetailed">None</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Rates Summary Tab -->
+  </div>
+  <!-- End Container -->
+
+  <!-- Settings Modal -->
+  <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-sm">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: var(--primary); color: #fff;">
+          <h5 class="modal-title" id="settingsModalLabel">
+            <span class="material-icons align-middle">settings</span>
+            Settings
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Basic Tariff Settings -->
+          <div class="mb-2">
+            <label for="offPeakRateInput" class="form-label">Off-Peak Rate</label>
+            <input type="number" step="0.01" id="offPeakRateInput" class="form-control form-control-sm" value="41.68">
+          </div>
+          <div class="mb-2">
+            <label for="peakRateInput" class="form-label">Peak Rate</label>
+            <input type="number" step="0.01" id="peakRateInput" class="form-control form-control-sm" value="48.00">
+          </div>
+          <div class="mb-2">
+            <label for="fpaRateInput" class="form-label">FPA Rate</label>
+            <input type="number" step="0.01" id="fpaRateInput" class="form-control form-control-sm" value="2.50">
+          </div>
+          <div class="mb-2">
+            <label for="gstRateInput" class="form-label">GST Rate</label>
+            <input type="number" step="0.01" id="gstRateInput" class="form-control form-control-sm" value="0.17">
+          </div>
+          <div class="mb-2">
+            <label for="tvFeeInput" class="form-label">TV Fee</label>
+            <input type="number" step="0.01" id="tvFeeInput" class="form-control form-control-sm" value="35">
+          </div>
+          <hr>
+          <h6 class="mb-2">Additional Charges</h6>
+          <div class="input-group mb-2">
+            <input type="text" id="extraChargeDesc" class="form-control form-control-sm" placeholder="Description">
+            <input type="number" step="0.01" id="extraChargeAmt" class="form-control form-control-sm" placeholder="Amount">
+            <button class="btn btn-outline-primary btn-sm" type="button" onclick="addExtraCharge()">
+              <span class="material-icons" style="font-size:18px;">add</span>
+            </button>
+          </div>
+          <div id="extraChargesList"></div>
+        </div>
+        <div class="modal-footer py-1">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="updateSettings()" data-bs-dismiss="modal">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js">
+  </script>
+  <script>
+    // Global Tariff Settings & Additional Charges
+    let offPeakRate = 41.68;
+    let peakRate = 48.00;
+    let fpaRate = 2.50;
+    let gstRate = 0.17;
+    let tvFee = 35.00;
+    let additionalCharges = [];
+
+    // Update basic settings from modal inputs and refresh summary.
+    function updateSettings() {
+      offPeakRate = parseFloat(document.getElementById("offPeakRateInput").value) || offPeakRate;
+      peakRate = parseFloat(document.getElementById("peakRateInput").value) || peakRate;
+      fpaRate = parseFloat(document.getElementById("fpaRateInput").value) || fpaRate;
+      gstRate = parseFloat(document.getElementById("gstRateInput").value) || gstRate;
+      tvFee = parseFloat(document.getElementById("tvFeeInput").value) || tvFee;
+      calculateBill();
+      updateSummary();
+    }
+    
+    // Add an extra charge.
+    function addExtraCharge() {
+      const desc = document.getElementById("extraChargeDesc").value.trim();
+      const amt = parseFloat(document.getElementById("extraChargeAmt").value);
+      if (desc !== "" && !isNaN(amt)) {
+        additionalCharges.push({ description: desc, amount: amt });
+        document.getElementById("extraChargeDesc").value = "";
+        document.getElementById("extraChargeAmt").value = "";
+        renderExtraCharges();
+        updateSummary();
+      }
+    }
+    
+    // Render Extra Charges List in Settings Modal
+    function renderExtraCharges() {
+      const list = document.getElementById("extraChargesList");
+      list.innerHTML = "";
+      additionalCharges.forEach((charge, index) => {
+        const div = document.createElement("div");
+        div.className = "charge-item";
+        div.innerHTML = `<span><strong>${charge.description}</strong>: Rs. ${charge.amount.toFixed(2)}</span>
+                         <span class="material-icons" onclick="removeExtraCharge(${index})">delete</span>`;
+        list.appendChild(div);
+      });
+    }
+    
+    // Remove an extra charge
+    function removeExtraCharge(index) {
+      additionalCharges.splice(index, 1);
+      renderExtraCharges();
+      updateSummary();
+    }
+    
+    // Calculate Net Units
+    function calculateUnits() {
+      const offPeakImportPrev = parseFloat(document.getElementById("offPeakImportPrev").value) || 0;
+      const offPeakImportCurr = parseFloat(document.getElementById("offPeakImportCurr").value) || 0;
+      const offPeakExportPrev = parseFloat(document.getElementById("offPeakExportPrev").value) || 0;
+      const offPeakExportCurr = parseFloat(document.getElementById("offPeakExportCurr").value) || 0;
+      const peakImportPrev = parseFloat(document.getElementById("peakImportPrev").value) || 0;
+      const peakImportCurr = parseFloat(document.getElementById("peakImportCurr").value) || 0;
+      const peakExportPrev = parseFloat(document.getElementById("peakExportPrev").value) || 0;
+      const peakExportCurr = parseFloat(document.getElementById("peakExportCurr").value) || 0;
+      const netOffPeak = (offPeakImportCurr - offPeakImportPrev) - (offPeakExportCurr - offPeakExportPrev);
+      const netPeak = (peakImportCurr - peakImportPrev) - (peakExportCurr - peakExportPrev);
+      document.getElementById("netOffPeakUnits").textContent = netOffPeak.toFixed(2);
+      document.getElementById("netPeakUnits").textContent = netPeak.toFixed(2);
+    }
+    
+    // Compute Final Bill
+    function calculateBill() {
+      const netOffPeakUnits = parseFloat(document.getElementById("netOffPeakUnits").textContent) || 0;
+      const netPeakUnits = parseFloat(document.getElementById("netPeakUnits").textContent) || 0;
+      const totalUnits = netOffPeakUnits + netPeakUnits;
+      const costBeforeTaxes = (netOffPeakUnits * offPeakRate) + (netPeakUnits * peakRate);
+      const fpa = totalUnits * fpaRate;
+      const gst = (costBeforeTaxes + fpa) * gstRate;
+      const extraChargesSum = additionalCharges.reduce((sum, charge) => sum + charge.amount, 0);
+      const totalTaxes = fpa + gst + tvFee + extraChargesSum;
+      const finalBill = costBeforeTaxes + totalTaxes;
+      
+      document.getElementById("totalUnits").textContent = totalUnits.toFixed(2);
+      document.getElementById("costBeforeTaxes").textContent = costBeforeTaxes.toFixed(2);
+      document.getElementById("totalTaxes").textContent = totalTaxes.toFixed(2);
+      document.getElementById("finalBill").textContent = finalBill.toFixed(2);
+    }
+    
+    // Update the Rates Summary Tab with all current settings.
+    function updateSummary() {
+      document.getElementById("summaryOffPeakRate").textContent = offPeakRate.toFixed(2);
+      document.getElementById("summaryPeakRate").textContent = peakRate.toFixed(2);
+      document.getElementById("summaryFpaRate").textContent = fpaRate.toFixed(2);
+      document.getElementById("summaryGstRate").textContent = gstRate.toFixed(2);
+      document.getElementById("summaryTvFee").textContent = tvFee.toFixed(2);
+      
+      let extraSum = additionalCharges.reduce((sum, c) => sum + c.amount, 0);
+      document.getElementById("summaryExtraCharges").textContent = extraSum.toFixed(2);
+      
+      let detailed = additionalCharges.map(c => `${c.description}: Rs. ${c.amount.toFixed(2)}`).join(', ');
+      if (detailed === "") { detailed = "None"; }
+      document.getElementById("summaryExtraChargesDetailed").textContent = detailed;
+    }
+  </script>
+</body>
+</html>
